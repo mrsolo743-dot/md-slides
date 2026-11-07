@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="md-slides {{version}}">
+{{meta_tags}}<title>{{title}}</title>
+<style>
+{{css}}
+:root { --slide-w: {{width}}px; --slide-h: {{height}}px; }
+@media print { @page { size: {{width}}px {{height}}px; margin: 0; } .slide { width: {{width}}px; height: {{height}}px; } }
+</style>
+</head>
+<body data-theme="{{theme}}">
+<main class="viewport" aria-live="polite">
+<div class="stage">
+{{slides}}
+</div>
+</main>
+<div class="progress" aria-hidden="true"><span></span></div>
+<div class="counter" aria-hidden="true"></div>
+
+<aside class="presenter-ui" aria-label="Панель докладчика">
+  <div class="pres-clock"><span id="pres-timer">00:00</span><small>сейчас <span id="pres-clock">--:--</span> · R — сброс</small></div>
+  <div class="pres-next-label">Следующий слайд</div>
+  <div class="pres-next"></div>
+  <div class="pres-notes"></div>
+</aside>
+
+<div class="overlay" id="help" role="dialog" aria-label="Горячие клавиши">
+  <div class="panel">
+    <h2>Горячие клавиши</h2>
+    <table>
+      <tr><td><kbd>→</kbd><kbd>Пробел</kbd><kbd>PgDn</kbd></td><td>Дальше (следующий фрагмент или слайд)</td></tr>
+      <tr><td><kbd>←</kbd><kbd>PgUp</kbd></td><td>Назад</td></tr>
+      <tr><td><kbd>Home</kbd><kbd>End</kbd></td><td>Первый / последний слайд</td></tr>
+      <tr><td><kbd>G</kbd></td><td>Перейти к слайду по номеру или заголовку</td></tr>
+      <tr><td><kbd>O</kbd></td><td>Обзор всех слайдов</td></tr>
+      <tr><td><kbd>P</kbd></td><td>Режим докладчика: заметки, таймер, следующий слайд</td></tr>
+      <tr><td><kbd>R</kbd></td><td>Сбросить таймер</td></tr>
+      <tr><td><kbd>F</kbd></td><td>Полный экран</td></tr>
+      <tr><td><kbd>T</kbd></td><td>Сменить тему</td></tr>
+      <tr><td><kbd>B</kbd></td><td>Чёрный экран</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>P</kbd></td><td>Печать / сохранить в PDF</td></tr>
+      <tr><td><kbd>?</kbd><kbd>Esc</kbd></td><td>Показать / закрыть подсказку</td></tr>
+    </table>
+  </div>
+</div>
+<div class="overlay" id="goto" role="dialog" aria-label="Перейти к слайду">
+  <div class="panel">
+    <h2>Перейти к слайду</h2>
+    <input id="goto-input" type="text" autocomplete="off" aria-label="Номер или заголовок слайда">
+  </div>
+</div>
+<div class="overlay" id="overview" role="dialog" aria-label="Обзор слайдов">
+  <div class="overview-grid"></div>
+</div>
+
+<script type="application/json" id="md-slides-config">{{config}}</script>
+<script>
+{{js}}
+</script>
+</body>
+</html>

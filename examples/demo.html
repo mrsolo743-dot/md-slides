@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="md-slides 1.0.0">
+<meta name="author" content="Тимур Иванов">
+<title>md-slides — презентации из Markdown</title>
+<style>
+/* md-slides: стили презентации. Темы задаются переменными на [data-theme]. */
+:root {
+  --slide-w: 1280px;
+  --slide-h: 720px;
+  --font: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", "Fira Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+[data-theme="light"] {
+  --bg: #eef0f4; --slide-bg: #ffffff; --fg: #1c2230; --muted: #5b6475; --accent: #2f6fed;
+  --code-bg: #f4f6fa; --code-fg: #1c2230; --border: #d9dee8; --quote: #2f6fed;
+  --tok-keyword: #a626a4; --tok-string: #50a14f; --tok-comment: #9aa1ad; --tok-number: #c46a00;
+  --tok-builtin: #0f7f9e; --tok-function: #2f6fed; --tok-decorator: #c46a00; --tok-variable: #c2410c;
+}
+[data-theme="dark"] {
+  --bg: #0b0e14; --slide-bg: #151a23; --fg: #e6e9ef; --muted: #98a2b3; --accent: #7aa2ff;
+  --code-bg: #0e1219; --code-fg: #e6e9ef; --border: #2a3140; --quote: #7aa2ff;
+  --tok-keyword: #c792ea; --tok-string: #a5d6a7; --tok-comment: #6b7385; --tok-number: #f78c6c;
+  --tok-builtin: #82d8f0; --tok-function: #82aaff; --tok-decorator: #ffcb6b; --tok-variable: #ffcb6b;
+}
+[data-theme="terminal"] {
+  --bg: #000; --slide-bg: #050805; --fg: #b8f5b8; --muted: #5fae5f; --accent: #39ff14;
+  --code-bg: #000; --code-fg: #b8f5b8; --border: #1f4d1f; --quote: #39ff14;
+  --tok-keyword: #39ff14; --tok-string: #e5f77d; --tok-comment: #3f7a3f; --tok-number: #7df7e5;
+  --tok-builtin: #7dd3f7; --tok-function: #ffffff; --tok-decorator: #e5f77d; --tok-variable: #e5f77d;
+  --font: var(--mono);
+}
+[data-theme="sepia"] {
+  --bg: #e8dcc6; --slide-bg: #f7f0e1; --fg: #3b2f22; --muted: #7a6650; --accent: #a4521d;
+  --code-bg: #efe5d0; --code-fg: #3b2f22; --border: #d8c8a8; --quote: #a4521d;
+  --tok-keyword: #8a3b8f; --tok-string: #5f7a2b; --tok-comment: #a3917a; --tok-number: #b35c00;
+  --tok-builtin: #1d6f7a; --tok-function: #a4521d; --tok-decorator: #b35c00; --tok-variable: #b35c00;
+  --font: Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font);
+  overflow: hidden; -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- сцена и масштабирование ---------- */
+.viewport { position: fixed; inset: 0; overflow: hidden; }
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: var(--slide-w); height: var(--slide-h);
+  transform-origin: center center;
+  transform: translate(-50%, -50%) scale(var(--scale, 1));
+}
+.slide {
+  position: absolute; inset: 0; display: none; flex-direction: column; justify-content: flex-start;
+  padding: 64px 88px; background: var(--slide-bg); color: var(--fg);
+  border-radius: 6px; box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden;
+  font-size: 30px; line-height: 1.45;
+}
+.slide.active { display: flex; }
+.slide.center { justify-content: center; text-align: center; }
+.slide.center ul, .slide.center ol { text-align: left; margin-left: auto; margin-right: auto; }
+.slide.title h1 { font-size: 80px; }
+
+/* ---------- типографика ---------- */
+.slide h1, .slide h2, .slide h3, .slide h4 { margin: 0 0 .5em; line-height: 1.15; letter-spacing: -.01em; }
+.slide h1 { font-size: 64px; }
+.slide h2 { font-size: 50px; color: var(--accent); }
+.slide h3 { font-size: 38px; }
+.slide h4, .slide h5, .slide h6 { font-size: 32px; color: var(--muted); }
+.slide p { margin: 0 0 .7em; }
+.slide a { color: var(--accent); }
+.slide ul, .slide ol { margin: 0 0 .7em; padding-left: 1.3em; }
+.slide li { margin: .2em 0; }
+.slide li > ul, .slide li > ol { margin: .2em 0 0; font-size: .9em; }
+.slide ul.tasks { list-style: none; padding-left: .4em; }
+.slide li.task input { width: 24px; height: 24px; margin: 0 .45em 0 0; vertical-align: -3px; accent-color: var(--accent); }
+.slide li.task > ul, .slide li.task > ol { margin-left: 1.6em; }
+.slide strong { color: var(--accent); }
+.slide del { color: var(--muted); }
+.slide hr { border: 0; border-top: 2px solid var(--border); margin: .6em 0; width: 100%; }
+.slide img { max-width: 100%; max-height: 460px; object-fit: contain; border-radius: 6px; }
+.slide blockquote {
+  margin: 0 0 .7em; padding: .4em 1em; border-left: 6px solid var(--quote);
+  color: var(--muted); font-style: italic; background: color-mix(in srgb, var(--quote) 7%, transparent);
+}
+.slide blockquote p:last-child { margin-bottom: 0; }
+
+.slide code {
+  font-family: var(--mono); font-size: .85em; background: var(--code-bg);
+  padding: .1em .35em; border-radius: 4px; border: 1px solid var(--border);
+}
+.slide pre {
+  position: relative; margin: 0 0 .7em; padding: 22px 26px; background: var(--code-bg); color: var(--code-fg);
+  border: 1px solid var(--border); border-radius: 8px; overflow: auto; font-size: 22px; line-height: 1.5;
+  text-align: left; max-height: 520px;
+}
+.slide pre code { background: none; border: 0; padding: 0; font-size: 1em; }
+.slide pre[data-lang]::after {
+  content: attr(data-lang); position: absolute; top: 6px; right: 12px;
+  font: 14px var(--mono); color: var(--muted); text-transform: lowercase;
+}
+.tok-keyword { color: var(--tok-keyword); font-weight: 600; }
+.tok-string { color: var(--tok-string); }
+.tok-comment { color: var(--tok-comment); font-style: italic; }
+.tok-number { color: var(--tok-number); }
+.tok-builtin { color: var(--tok-builtin); }
+.tok-function { color: var(--tok-function); }
+.tok-decorator { color: var(--tok-decorator); }
+.tok-variable { color: var(--tok-variable); }
+
+.slide table { border-collapse: collapse; margin: 0 0 .7em; font-size: 26px; }
+.slide th, .slide td { border: 1px solid var(--border); padding: .35em .8em; }
+.slide th { background: var(--code-bg); color: var(--accent); }
+
+.slide .notes { display: none; }
+.slide .footer {
+  position: absolute; left: 88px; right: 88px; bottom: 22px; display: flex; justify-content: space-between;
+  font-size: 16px; color: var(--muted); pointer-events: none;
+}
+
+/* ---------- фрагменты ---------- */
+.fragment { opacity: 0; transform: translateY(12px); transition: opacity .3s ease, transform .3s ease; }
+.fragment.visible { opacity: 1; transform: none; }
+
+/* ---------- интерфейс ---------- */
+.progress { position: fixed; left: 0; bottom: 0; height: 5px; width: 100%; background: transparent; z-index: 5; }
+.progress > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+.counter {
+  position: fixed; right: 16px; bottom: 14px; z-index: 5; font: 14px var(--mono); color: var(--muted);
+  background: color-mix(in srgb, var(--slide-bg) 85%, transparent); padding: 2px 8px; border-radius: 4px;
+}
+.blackout .viewport { visibility: hidden; }
+.blackout { background: #000; }
+
+.overlay {
+  position: fixed; inset: 0; z-index: 20; display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(3px);
+}
+.overlay.open { display: flex; }
+.panel {
+  background: var(--slide-bg); color: var(--fg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 24px 28px; max-width: 560px; width: calc(100% - 32px); box-shadow: 0 20px 60px rgba(0,0,0,.4);
+  font-family: system-ui, sans-serif; font-size: 15px;
+}
+.panel h2 { margin: 0 0 12px; font-size: 20px; }
+.panel table { width: 100%; border-collapse: collapse; }
+.panel td { padding: 4px 0; vertical-align: top; }
+.panel kbd {
+  font: 12px var(--mono); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px;
+  padding: 1px 6px; background: var(--code-bg); margin-right: 3px; white-space: nowrap;
+}
+.panel input {
+  width: 100%; font: 18px var(--mono); padding: 8px 10px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--code-bg); color: var(--fg);
+}
+
+/* обзор всех слайдов */
+.overview-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(256px, 1fr)); gap: 18px;
+  padding: 24px; width: 100%; max-height: 100%; overflow: auto; align-content: start;
+}
+.thumb { position: relative; width: 256px; height: 144px; cursor: pointer; border-radius: 6px; outline: 3px solid transparent; }
+.thumb.current { outline-color: var(--accent); }
+.thumb:focus-visible { outline-color: var(--fg); }
+.thumb-inner { position: absolute; left: 0; top: 0; width: var(--slide-w); height: var(--slide-h); transform: scale(.2); transform-origin: 0 0; pointer-events: none; }
+.thumb-inner .slide { display: flex; }
+.thumb-inner .fragment { opacity: 1; transform: none; }
+.thumb-num { position: absolute; left: 6px; bottom: 6px; font: 12px var(--mono); background: var(--accent); color: var(--slide-bg); padding: 1px 6px; border-radius: 3px; }
+
+/* ---------- режим докладчика ---------- */
+.presenter-ui { display: none; }
+body.presenter .viewport { right: 38%; bottom: 0; }
+body.presenter .presenter-ui {
+  display: grid; position: fixed; top: 0; right: 0; bottom: 0; width: 38%; z-index: 4;
+  grid-template-rows: auto auto auto 1fr; gap: 14px; padding: 16px; background: var(--bg);
+  border-left: 1px solid var(--border); font-family: system-ui, sans-serif;
+}
+.pres-clock { display: flex; justify-content: space-between; align-items: baseline; font: 600 28px var(--mono); }
+.pres-clock small { font-size: 14px; color: var(--muted); font-weight: 400; }
+.pres-next { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 6px; border: 1px solid var(--border); background: var(--slide-bg); }
+.pres-next .thumb-inner { transform-origin: 0 0; }
+.pres-next-label { font-size: 13px; color: var(--muted); margin-bottom: -8px; }
+.pres-next .empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.pres-notes { overflow: auto; background: var(--slide-bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px 18px; font-size: 20px; line-height: 1.5; }
+.pres-notes:empty::before { content: "Заметок к этому слайду нет"; color: var(--muted); font-style: italic; }
+.pres-notes p { margin: 0 0 .6em; }
+body.presenter .counter { right: calc(38% + 16px); }
+body.presenter .progress { width: 62%; }
+
+/* ---------- печать / PDF ---------- */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; width: 1280px; height: 720px; border-radius: 0; box-shadow: none;
+    page-break-after: always; break-after: page;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .fragment { opacity: 1 !important; transform: none !important; }
+  .progress, .counter, .overlay, .presenter-ui { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fragment, .progress > span { transition: none; }
+}
+
+:root { --slide-w: 1280px; --slide-h: 720px; }
+@media print { @page { size: 1280px 720px; margin: 0; } .slide { width: 1280px; height: 720px; } }
+</style>
+</head>
+<body data-theme="dark">
+<main class="viewport" aria-live="polite">
+<div class="stage">
+<section class="slide center title" data-index="0" data-title="md-slides" role="region" aria-label="Слайд 1 из 7">
+<h1>md-slides</h1>
+<p>Презентации из <strong>Markdown</strong> в один HTML-файл</p>
+<p>Нажмите <code>?</code>, чтобы увидеть горячие клавиши</p>
+<aside class="notes"><p>Это заметка докладчика. Нажмите <strong>P</strong>, чтобы открыть режим докладчика с таймером и следующим слайдом.</p></aside>
+<div class="footer"><span>md-slides · демо</span><span>1 / 7</span></div>
+</section>
+
+<section class="slide" data-index="1" data-title="Зачем это нужно" role="region" aria-label="Слайд 2 из 7">
+<h2>Зачем это нужно</h2>
+<ul>
+<li>Пишете слайды в любимом редакторе</li>
+<li>Храните их в git рядом с кодом</li>
+<li>Получаете <strong>один файл</strong>, который работает офлайн</li>
+<li>Никаких зависимостей: только Python 3.9+</li>
+</ul>
+<blockquote>
+<p>Хорошая презентация — это текст, а не набор картинок.</p>
+</blockquote>
+<div class="footer"><span>md-slides · демо</span><span>2 / 7</span></div>
+</section>
+
+<section class="slide" data-index="2" data-title="Пошаговое появление" role="region" aria-label="Слайд 3 из 7">
+<h2>Пошаговое появление</h2>
+<p>Пункты списка появляются по одному:</p>
+<ul>
+<li class="fragment">Сначала идея</li>
+<li class="fragment">Потом реализация</li>
+<li class="fragment">И наконец <del>баги</del> тесты</li>
+</ul>
+<aside class="notes"><p>Директива <code>&lt;!-- fragments --&gt;</code> включает пошаговое появление пунктов.</p></aside>
+<div class="footer"><span>md-slides · демо</span><span>3 / 7</span></div>
+</section>
+
+<section class="slide" data-index="3" data-title="Код с подсветкой" role="region" aria-label="Слайд 4 из 7">
+<h2>Код с подсветкой</h2>
+<pre data-lang="python"><code class="language-python"><span class="tok-keyword">from</span> pathlib <span class="tok-keyword">import</span> Path
+
+<span class="tok-keyword">def</span> <span class="tok-function">build</span>(source: Path) -&gt; <span class="tok-builtin">str</span>:
+    <span class="tok-string">&quot;&quot;&quot;Собирает презентацию.&quot;&quot;&quot;</span>
+    deck = <span class="tok-function">parse_deck</span>(source.<span class="tok-function">read_text</span>())
+    <span class="tok-keyword">return</span> <span class="tok-function">render</span>(deck, theme=<span class="tok-string">&quot;dark&quot;</span>)  <span class="tok-comment"># 4 темы на выбор</span></code></pre>
+<pre data-lang="bash"><code class="language-bash">md-slides build talk.md --theme light --embed-images</code></pre>
+<div class="footer"><span>md-slides · демо</span><span>4 / 7</span></div>
+</section>
+
+<section class="slide" data-index="4" data-title="Таблицы" role="region" aria-label="Слайд 5 из 7">
+<h2>Таблицы</h2>
+<table>
+<thead>
+<tr><th style="text-align:left">Тема</th><th style="text-align:center">Фон</th><th style="text-align:right">Шрифт</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align:left"><code>light</code></td><td style="text-align:center">светлый</td><td style="text-align:right">без засечек</td></tr>
+<tr><td style="text-align:left"><code>dark</code></td><td style="text-align:center">тёмный</td><td style="text-align:right">без засечек</td></tr>
+<tr><td style="text-align:left"><code>terminal</code></td><td style="text-align:center">чёрный</td><td style="text-align:right">моноширинный</td></tr>
+<tr><td style="text-align:left"><code>sepia</code></td><td style="text-align:center">бежевый</td><td style="text-align:right">с засечками</td></tr>
+</tbody>
+</table>
+<p>Переключение темы прямо во время показа: клавиша <code>T</code>.</p>
+<div class="footer"><span>md-slides · демо</span><span>5 / 7</span></div>
+</section>
+
+<section class="slide" data-index="5" data-title="Списки задач" role="region" aria-label="Слайд 6 из 7">
+<h2>Списки задач</h2>
+<ul class="tasks">
+<li class="task"><input type="checkbox" disabled checked> Парсер Markdown</li>
+<li class="task"><input type="checkbox" disabled checked> Подсветка кода</li>
+<li class="task"><input type="checkbox" disabled checked> Режим докладчика</li>
+<li class="task"><input type="checkbox" disabled> Ваша презентация
+<ul>
+<li>напишите <code>slides.md</code></li>
+<li>запустите <code>md-slides serve slides.md</code></li>
+</ul></li>
+</ul>
+<div class="footer"><span>md-slides · демо</span><span>6 / 7</span></div>
+</section>
+
+<section class="slide center" data-index="6" data-title="Спасибо!" style="background:#1d3b8a;color:#ffffff" role="region" aria-label="Слайд 7 из 7">
+<h1>Спасибо!</h1>
+<p><a href="https://github.com/mrsolo743-dot/md-slides">github.com/mrsolo743-dot/md-slides</a></p>
+<div class="footer"><span>md-slides · демо</span><span>7 / 7</span></div>
+</section>
+</div>
+</main>
+<div class="progress" aria-hidden="true"><span></span></div>
+<div class="counter" aria-hidden="true"></div>
+
+<aside class="presenter-ui" aria-label="Панель докладчика">
+  <div class="pres-clock"><span id="pres-timer">00:00</span><small>сейчас <span id="pres-clock">--:--</span> · R — сброс</small></div>
+  <div class="pres-next-label">Следующий слайд</div>
+  <div class="pres-next"></div>
+  <div class="pres-notes"></div>
+</aside>
+
+<div class="overlay" id="help" role="dialog" aria-label="Горячие клавиши">
+  <div class="panel">
+    <h2>Горячие клавиши</h2>
+    <table>
+      <tr><td><kbd>→</kbd><kbd>Пробел</kbd><kbd>PgDn</kbd></td><td>Дальше (следующий фрагмент или слайд)</td></tr>
+      <tr><td><kbd>←</kbd><kbd>PgUp</kbd></td><td>Назад</td></tr>
+      <tr><td><kbd>Home</kbd><kbd>End</kbd></td><td>Первый / последний слайд</td></tr>
+      <tr><td><kbd>G</kbd></td><td>Перейти к слайду по номеру или заголовку</td></tr>
+      <tr><td><kbd>O</kbd></td><td>Обзор всех слайдов</td></tr>
+      <tr><td><kbd>P</kbd></td><td>Режим докладчика: заметки, таймер, следующий слайд</td></tr>
+      <tr><td><kbd>R</kbd></td><td>Сбросить таймер</td></tr>
+      <tr><td><kbd>F</kbd></td><td>Полный экран</td></tr>
+      <tr><td><kbd>T</kbd></td><td>Сменить тему</td></tr>
+      <tr><td><kbd>B</kbd></td><td>Чёрный экран</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>P</kbd></td><td>Печать / сохранить в PDF</td></tr>
+      <tr><td><kbd>?</kbd><kbd>Esc</kbd></td><td>Показать / закрыть подсказку</td></tr>
+    </table>
+  </div>
+</div>
+<div class="overlay" id="goto" role="dialog" aria-label="Перейти к слайду">
+  <div class="panel">
+    <h2>Перейти к слайду</h2>
+    <input id="goto-input" type="text" autocomplete="off" aria-label="Номер или заголовок слайда">
+  </div>
+</div>
+<div class="overlay" id="overview" role="dialog" aria-label="Обзор слайдов">
+  <div class="overview-grid"></div>
+</div>
+
+<script type="application/json" id="md-slides-config">{"title": "md-slides — презентации из Markdown", "themes": ["light", "dark", "terminal", "sepia"], "width": 1280, "height": 720, "live": false}</script>
+<script>
+/* md-slides: навигация и интерфейс презентации. Без зависимостей. */
+(function () {
+  "use strict";
+
+  const config = JSON.parse(document.getElementById("md-slides-config").textContent);
+  const body = document.body;
+  const stage = document.querySelector(".stage");
+  const viewport = document.querySelector(".viewport");
+  const slides = Array.from(stage.querySelectorAll(":scope > .slide"));
+  const progress = document.querySelector(".progress > span");
+  const counter = document.querySelector(".counter");
+  const overlays = {
+    help: document.getElementById("help"),
+    goto: document.getElementById("goto"),
+    overview: document.getElementById("overview"),
+  };
+  const gotoInput = document.getElementById("goto-input");
+  const presNotes = document.querySelector(".pres-notes");
+  const presNext = document.querySelector(".pres-next");
+  const presTimer = document.getElementById("pres-timer");
+  const presClock = document.getElementById("pres-clock");
+
+  const W = config.width, H = config.height;
+  const total = slides.length;
+  let current = 0;
+  let timerStart = null;
+
+  // ---------------------------------------------------------------- состояние
+  const fragmentsOf = (i) => Array.from(slides[i].querySelectorAll(".fragment"));
+
+  function setFragments(i, count) {
+    fragmentsOf(i).forEach((el, k) => el.classList.toggle("visible", k < count));
+  }
+  function visibleFragments(i) {
+    return fragmentsOf(i).filter((el) => el.classList.contains("visible")).length;
+  }
+
+  function show(index, { fragments = "none", updateHash = true } = {}) {
+    if (!total) return;
+    index = Math.max(0, Math.min(total - 1, index));
+    slides[current].classList.remove("active");
+    current = index;
+    const slide = slides[current];
+    slide.classList.add("active");
+    setFragments(current, fragments === "all" ? Infinity : 0);
+    progress.style.width = (total > 1 ? (current / (total - 1)) * 100 : 100) + "%";
+    counter.textContent = current + 1 + " / " + total;
+    document.title = (slide.dataset.title ? slide.dataset.title + " — " : "") + config.title;
+    if (updateHash) {
+      const hash = "#" + (current + 1);
+      if (location.hash !== hash) history.replaceState(null, "", hash);
+    }
+    updatePresenter();
+  }
+
+  function next() {
+    const frags = fragmentsOf(current);
+    const shown = visibleFragments(current);
+    if (shown < frags.length) {
+      setFragments(current, shown + 1);
+      return;
+    }
+    if (current < total - 1) show(current + 1);
+  }
+
+  function prev() {
+    const shown = visibleFragments(current);
+    if (shown > 0) {
+      setFragments(current, shown - 1);
+      return;
+    }
+    if (current > 0) show(current - 1, { fragments: "all" });
+  }
+
+  // ----------------------------------------------------------- масштабирование
+  function fit() {
+    const rect = viewport.getBoundingClientRect();
+    const scale = Math.min(rect.width / W, rect.height / H) * 0.96;
+    stage.style.setProperty("--scale", String(Math.max(scale, 0.05)));
+    if (body.classList.contains("presenter")) fitPreview();
+  }
+
+  // ---------------------------------------------------------------- оверлеи
+  function closeOverlays() {
+    Object.values(overlays).forEach((o) => o.classList.remove("open"));
+    // иначе фокус остаётся в скрытом поле ввода и «съедает» нажатия клавиш
+    const focused = document.activeElement;
+    if (focused && focused.closest && focused.closest(".overlay")) focused.blur();
+    gotoInput.removeAttribute("aria-invalid");
+  }
+  function isOpen(name) {
+    return overlays[name].classList.contains("open");
+  }
+  function anyOpen() {
+    return Object.keys(overlays).some(isOpen);
+  }
+
+  function openGoto() {
+    closeOverlays();
+    overlays.goto.classList.add("open");
+    gotoInput.value = "";
+    gotoInput.placeholder = "1–" + total + " или часть заголовка";
+    gotoInput.focus();
+  }
+
+  function resolveGoto(value) {
+    value = value.trim();
+    if (!value) return null;
+    if (/^\d+$/.test(value)) return parseInt(value, 10) - 1;
+    const needle = value.toLowerCase();
+    const found = slides.findIndex((s) => (s.dataset.title || "").toLowerCase().includes(needle));
+    return found >= 0 ? found : null;
+  }
+
+  function thumbnail(index) {
+    const inner = document.createElement("div");
+    inner.className = "thumb-inner";
+    const clone = slides[index].cloneNode(true);
+    clone.classList.add("active");
+    clone.removeAttribute("id");
+    inner.appendChild(clone);
+    return inner;
+  }
+
+  function openOverview() {
+    closeOverlays();
+    const grid = overlays.overview.querySelector(".overview-grid");
+    grid.textContent = "";
+    slides.forEach((_, i) => {
+      const t = document.createElement("div");
+      t.className = "thumb" + (i === current ? " current" : "");
+      t.tabIndex = 0;
+      t.dataset.index = String(i);
+      t.title = slides[i].dataset.title || "";
+      const inner = thumbnail(i);
+      inner.style.transform = "scale(" + 256 / W + ")";
+      t.appendChild(inner);
+      const num = document.createElement("span");
+      num.className = "thumb-num";
+      num.textContent = String(i + 1);
+      t.appendChild(num);
+      grid.appendChild(t);
+    });
+    overlays.overview.classList.add("open");
+    const cur = grid.querySelector(".thumb.current");
+    if (cur) {
+      cur.focus();
+      if (cur.scrollIntoView) cur.scrollIntoView({ block: "nearest" });
+    }
+  }
+
+  overlays.overview.addEventListener("click", (e) => {
+    const t = e.target.closest(".thumb");
+    if (t) {
+      closeOverlays();
+      show(parseInt(t.dataset.index, 10));
+    } else if (e.target === overlays.overview) closeOverlays();
+  });
+  overlays.help.addEventListener("click", (e) => {
+    if (e.target === overlays.help) closeOverlays();
+  });
+
+  gotoInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const idx = resolveGoto(gotoInput.value);
+      if (idx !== null) {
+        closeOverlays();
+        show(idx);
+      } else {
+        gotoInput.select();
+        gotoInput.setAttribute("aria-invalid", "true");
+      }
+      e.preventDefault();
+    } else if (e.key === "Escape") {
+      closeOverlays();
+    }
+    e.stopPropagation();
+  });
+
+  // --------------------------------------------------------- режим докладчика
+  function fmt(ms) {
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    const pad = (n) => String(n).padStart(2, "0");
+    return (h ? h + ":" : "") + pad(m) + ":" + pad(sec);
+  }
+
+  function tick() {
+    if (!body.classList.contains("presenter")) return;
+    presTimer.textContent = fmt(Date.now() - timerStart);
+    const now = new Date();
+    presClock.textContent = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+  }
+
+  function fitPreview() {
+    const inner = presNext.querySelector(".thumb-inner");
+    if (inner) inner.style.transform = "scale(" + presNext.clientWidth / W + ")";
+  }
+
+  function updatePresenter() {
+    if (!body.classList.contains("presenter")) return;
+    const notes = slides[current].querySelector(".notes");
+    presNotes.innerHTML = notes ? notes.innerHTML : "";
+    presNext.textContent = "";
+    if (current + 1 < total) {
+      presNext.appendChild(thumbnail(current + 1));
+      fitPreview();
+    } else {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "Конец презентации";
+      presNext.appendChild(empty);
+    }
+  }
+
+  function togglePresenter() {
+    const on = body.classList.toggle("presenter");
+    if (on && timerStart === null) timerStart = Date.now();
+    fit();
+    updatePresenter();
+    tick();
+  }
+
+  setInterval(tick, 500);
+
+  // ---------------------------------------------------------------- темы
+  // ключ учитывает тему сборки: пересборка с другой темой не «перебивается» старым выбором
+  const themeKey = "md-slides-theme:" + config.title + ":" + body.dataset.theme;
+
+  function cycleTheme() {
+    const themes = config.themes;
+    const idx = themes.indexOf(body.dataset.theme);
+    body.dataset.theme = themes[(idx + 1) % themes.length];
+    try { localStorage.setItem(themeKey, body.dataset.theme); } catch (e) { /* нет хранилища */ }
+  }
+
+  try {
+    const saved = localStorage.getItem(themeKey);
+    if (saved && config.themes.includes(saved)) body.dataset.theme = saved;
+  } catch (e) { /* нет хранилища */ }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+
+  // ---------------------------------------------------------------- клавиатура
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const key = e.key;
+
+    if (anyOpen()) {
+      if (key === "Escape" || (key === "?" && isOpen("help")) || ((key === "o" || key === "O") && isOpen("overview"))) {
+        closeOverlays();
+        e.preventDefault();
+      } else if (isOpen("overview") && (key === "Enter" || key === " ")) {
+        const t = document.activeElement && document.activeElement.closest(".thumb");
+        if (t) { closeOverlays(); show(parseInt(t.dataset.index, 10)); e.preventDefault(); }
+      } else if (isOpen("overview") && key.startsWith("Arrow")) {
+        const thumbs = Array.from(overlays.overview.querySelectorAll(".thumb"));
+        const pos = thumbs.indexOf(document.activeElement);
+        const cols = Math.max(1, Math.round(overlays.overview.querySelector(".overview-grid").clientWidth / 274));
+        const delta = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[key];
+        const target = thumbs[Math.max(0, Math.min(thumbs.length - 1, (pos < 0 ? current : pos) + delta))];
+        if (target) target.focus();
+        e.preventDefault();
+      }
+      return;
+    }
+
+    switch (key) {
+      case "ArrowRight": case "ArrowDown": case "PageDown": case " ": case "Enter": case "l": case "j":
+        next(); break;
+      case "ArrowLeft": case "ArrowUp": case "PageUp": case "Backspace": case "h": case "k":
+        prev(); break;
+      case "Home": show(0); break;
+      case "End": show(total - 1, { fragments: "all" }); break;
+      case "f": case "F": toggleFullscreen(); break;
+      case "p": case "P": togglePresenter(); break;
+      case "t": case "T": cycleTheme(); break;
+      case "g": case "G": openGoto(); break;
+      case "o": case "O": openOverview(); break;
+      case "b": case "B": case ".": body.classList.toggle("blackout"); break;
+      case "r": case "R": timerStart = Date.now(); tick(); break;
+      case "?": closeOverlays(); overlays.help.classList.add("open"); break;
+      default: return;
+    }
+    e.preventDefault();
+  });
+
+  // ------------------------------------------------------- мышь и свайпы
+  let touchX = null, touchY = null;
+  viewport.addEventListener("touchstart", (e) => {
+    touchX = e.touches[0].clientX;
+    touchY = e.touches[0].clientY;
+  }, { passive: true });
+  viewport.addEventListener("touchend", (e) => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    const dy = e.changedTouches[0].clientY - touchY;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) (dx < 0 ? next : prev)();
+    touchX = touchY = null;
+  });
+  viewport.addEventListener("click", (e) => {
+    if (e.target.closest("a, input, pre, button")) return;
+    const rect = viewport.getBoundingClientRect();
+    (e.clientX - rect.left < rect.width / 3 ? prev : next)();
+  });
+
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", () => {
+    const n = parseInt(location.hash.slice(1), 10);
+    if (!isNaN(n) && n - 1 !== current) show(n - 1, { updateHash: false });
+  });
+
+  // ------------------------------------------------------- живая перезагрузка
+  if (config.live) {
+    let version = null;
+    setInterval(() => {
+      fetch("/__version", { cache: "no-store" })
+        .then((r) => r.text())
+        .then((v) => {
+          if (version !== null && v !== version) location.reload();
+          version = v;
+        })
+        .catch(() => {});
+    }, 1000);
+  }
+
+  // ---------------------------------------------------------------- старт
+  const start = parseInt(location.hash.slice(1), 10);
+  current = 0;
+  fit();
+  show(isNaN(start) ? 0 : start - 1);
+
+  // API для отладки и тестов.
+  window.mdSlides = {
+    next, prev, show, total,
+    get current() { return current; },
+    get visibleFragments() { return visibleFragments(current); },
+  };
+})();
+
+</script>
+</body>
+</html>

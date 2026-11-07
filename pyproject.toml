@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "md-slides"
+version = "1.0.0"
+description = "Автономные HTML-презентации из Markdown: подсветка кода, режим докладчика, темы, живой предпросмотр"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Тимур Иванов" }]
+requires-python = ">=3.9"
+dependencies = []
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Environment :: Console",
+  "Topic :: Multimedia :: Graphics :: Presentation",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+md-slides = "md_slides.cli:main"
+
+[tool.setuptools]
+packages = ["md_slides"]
+
+[tool.setuptools.package-data]
+md_slides = ["assets/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,205 @@
+/* md-slides: стили презентации. Темы задаются переменными на [data-theme]. */
+:root {
+  --slide-w: 1280px;
+  --slide-h: 720px;
+  --font: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", "Fira Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+[data-theme="light"] {
+  --bg: #eef0f4; --slide-bg: #ffffff; --fg: #1c2230; --muted: #5b6475; --accent: #2f6fed;
+  --code-bg: #f4f6fa; --code-fg: #1c2230; --border: #d9dee8; --quote: #2f6fed;
+  --tok-keyword: #a626a4; --tok-string: #50a14f; --tok-comment: #9aa1ad; --tok-number: #c46a00;
+  --tok-builtin: #0f7f9e; --tok-function: #2f6fed; --tok-decorator: #c46a00; --tok-variable: #c2410c;
+}
+[data-theme="dark"] {
+  --bg: #0b0e14; --slide-bg: #151a23; --fg: #e6e9ef; --muted: #98a2b3; --accent: #7aa2ff;
+  --code-bg: #0e1219; --code-fg: #e6e9ef; --border: #2a3140; --quote: #7aa2ff;
+  --tok-keyword: #c792ea; --tok-string: #a5d6a7; --tok-comment: #6b7385; --tok-number: #f78c6c;
+  --tok-builtin: #82d8f0; --tok-function: #82aaff; --tok-decorator: #ffcb6b; --tok-variable: #ffcb6b;
+}
+[data-theme="terminal"] {
+  --bg: #000; --slide-bg: #050805; --fg: #b8f5b8; --muted: #5fae5f; --accent: #39ff14;
+  --code-bg: #000; --code-fg: #b8f5b8; --border: #1f4d1f; --quote: #39ff14;
+  --tok-keyword: #39ff14; --tok-string: #e5f77d; --tok-comment: #3f7a3f; --tok-number: #7df7e5;
+  --tok-builtin: #7dd3f7; --tok-function: #ffffff; --tok-decorator: #e5f77d; --tok-variable: #e5f77d;
+  --font: var(--mono);
+}
+[data-theme="sepia"] {
+  --bg: #e8dcc6; --slide-bg: #f7f0e1; --fg: #3b2f22; --muted: #7a6650; --accent: #a4521d;
+  --code-bg: #efe5d0; --code-fg: #3b2f22; --border: #d8c8a8; --quote: #a4521d;
+  --tok-keyword: #8a3b8f; --tok-string: #5f7a2b; --tok-comment: #a3917a; --tok-number: #b35c00;
+  --tok-builtin: #1d6f7a; --tok-function: #a4521d; --tok-decorator: #b35c00; --tok-variable: #b35c00;
+  --font: Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font);
+  overflow: hidden; -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- сцена и масштабирование ---------- */
+.viewport { position: fixed; inset: 0; overflow: hidden; }
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: var(--slide-w); height: var(--slide-h);
+  transform-origin: center center;
+  transform: translate(-50%, -50%) scale(var(--scale, 1));
+}
+.slide {
+  position: absolute; inset: 0; display: none; flex-direction: column; justify-content: flex-start;
+  padding: 64px 88px; background: var(--slide-bg); color: var(--fg);
+  border-radius: 6px; box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden;
+  font-size: 30px; line-height: 1.45;
+}
+.slide.active { display: flex; }
+.slide.center { justify-content: center; text-align: center; }
+.slide.center ul, .slide.center ol { text-align: left; margin-left: auto; margin-right: auto; }
+.slide.title h1 { font-size: 80px; }
+
+/* ---------- типографика ---------- */
+.slide h1, .slide h2, .slide h3, .slide h4 { margin: 0 0 .5em; line-height: 1.15; letter-spacing: -.01em; }
+.slide h1 { font-size: 64px; }
+.slide h2 { font-size: 50px; color: var(--accent); }
+.slide h3 { font-size: 38px; }
+.slide h4, .slide h5, .slide h6 { font-size: 32px; color: var(--muted); }
+.slide p { margin: 0 0 .7em; }
+.slide a { color: var(--accent); }
+.slide ul, .slide ol { margin: 0 0 .7em; padding-left: 1.3em; }
+.slide li { margin: .2em 0; }
+.slide li > ul, .slide li > ol { margin: .2em 0 0; font-size: .9em; }
+.slide ul.tasks { list-style: none; padding-left: .4em; }
+.slide li.task input { width: 24px; height: 24px; margin: 0 .45em 0 0; vertical-align: -3px; accent-color: var(--accent); }
+.slide li.task > ul, .slide li.task > ol { margin-left: 1.6em; }
+.slide strong { color: var(--accent); }
+.slide del { color: var(--muted); }
+.slide hr { border: 0; border-top: 2px solid var(--border); margin: .6em 0; width: 100%; }
+.slide img { max-width: 100%; max-height: 460px; object-fit: contain; border-radius: 6px; }
+.slide blockquote {
+  margin: 0 0 .7em; padding: .4em 1em; border-left: 6px solid var(--quote);
+  color: var(--muted); font-style: italic; background: color-mix(in srgb, var(--quote) 7%, transparent);
+}
+.slide blockquote p:last-child { margin-bottom: 0; }
+
+.slide code {
+  font-family: var(--mono); font-size: .85em; background: var(--code-bg);
+  padding: .1em .35em; border-radius: 4px; border: 1px solid var(--border);
+}
+.slide pre {
+  position: relative; margin: 0 0 .7em; padding: 22px 26px; background: var(--code-bg); color: var(--code-fg);
+  border: 1px solid var(--border); border-radius: 8px; overflow: auto; font-size: 22px; line-height: 1.5;
+  text-align: left; max-height: 520px;
+}
+.slide pre code { background: none; border: 0; padding: 0; font-size: 1em; }
+.slide pre[data-lang]::after {
+  content: attr(data-lang); position: absolute; top: 6px; right: 12px;
+  font: 14px var(--mono); color: var(--muted); text-transform: lowercase;
+}
+.tok-keyword { color: var(--tok-keyword); font-weight: 600; }
+.tok-string { color: var(--tok-string); }
+.tok-comment { color: var(--tok-comment); font-style: italic; }
+.tok-number { color: var(--tok-number); }
+.tok-builtin { color: var(--tok-builtin); }
+.tok-function { color: var(--tok-function); }
+.tok-decorator { color: var(--tok-decorator); }
+.tok-variable { color: var(--tok-variable); }
+
+.slide table { border-collapse: collapse; margin: 0 0 .7em; font-size: 26px; }
+.slide th, .slide td { border: 1px solid var(--border); padding: .35em .8em; }
+.slide th { background: var(--code-bg); color: var(--accent); }
+
+.slide .notes { display: none; }
+.slide .footer {
+  position: absolute; left: 88px; right: 88px; bottom: 22px; display: flex; justify-content: space-between;
+  font-size: 16px; color: var(--muted); pointer-events: none;
+}
+
+/* ---------- фрагменты ---------- */
+.fragment { opacity: 0; transform: translateY(12px); transition: opacity .3s ease, transform .3s ease; }
+.fragment.visible { opacity: 1; transform: none; }
+
+/* ---------- интерфейс ---------- */
+.progress { position: fixed; left: 0; bottom: 0; height: 5px; width: 100%; background: transparent; z-index: 5; }
+.progress > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+.counter {
+  position: fixed; right: 16px; bottom: 14px; z-index: 5; font: 14px var(--mono); color: var(--muted);
+  background: color-mix(in srgb, var(--slide-bg) 85%, transparent); padding: 2px 8px; border-radius: 4px;
+}
+.blackout .viewport { visibility: hidden; }
+.blackout { background: #000; }
+
+.overlay {
+  position: fixed; inset: 0; z-index: 20; display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(3px);
+}
+.overlay.open { display: flex; }
+.panel {
+  background: var(--slide-bg); color: var(--fg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 24px 28px; max-width: 560px; width: calc(100% - 32px); box-shadow: 0 20px 60px rgba(0,0,0,.4);
+  font-family: system-ui, sans-serif; font-size: 15px;
+}
+.panel h2 { margin: 0 0 12px; font-size: 20px; }
+.panel table { width: 100%; border-collapse: collapse; }
+.panel td { padding: 4px 0; vertical-align: top; }
+.panel kbd {
+  font: 12px var(--mono); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px;
+  padding: 1px 6px; background: var(--code-bg); margin-right: 3px; white-space: nowrap;
+}
+.panel input {
+  width: 100%; font: 18px var(--mono); padding: 8px 10px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--code-bg); color: var(--fg);
+}
+
+/* обзор всех слайдов */
+.overview-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(256px, 1fr)); gap: 18px;
+  padding: 24px; width: 100%; max-height: 100%; overflow: auto; align-content: start;
+}
+.thumb { position: relative; width: 256px; height: 144px; cursor: pointer; border-radius: 6px; outline: 3px solid transparent; }
+.thumb.current { outline-color: var(--accent); }
+.thumb:focus-visible { outline-color: var(--fg); }
+.thumb-inner { position: absolute; left: 0; top: 0; width: var(--slide-w); height: var(--slide-h); transform: scale(.2); transform-origin: 0 0; pointer-events: none; }
+.thumb-inner .slide { display: flex; }
+.thumb-inner .fragment { opacity: 1; transform: none; }
+.thumb-num { position: absolute; left: 6px; bottom: 6px; font: 12px var(--mono); background: var(--accent); color: var(--slide-bg); padding: 1px 6px; border-radius: 3px; }
+
+/* ---------- режим докладчика ---------- */
+.presenter-ui { display: none; }
+body.presenter .viewport { right: 38%; bottom: 0; }
+body.presenter .presenter-ui {
+  display: grid; position: fixed; top: 0; right: 0; bottom: 0; width: 38%; z-index: 4;
+  grid-template-rows: auto auto auto 1fr; gap: 14px; padding: 16px; background: var(--bg);
+  border-left: 1px solid var(--border); font-family: system-ui, sans-serif;
+}
+.pres-clock { display: flex; justify-content: space-between; align-items: baseline; font: 600 28px var(--mono); }
+.pres-clock small { font-size: 14px; color: var(--muted); font-weight: 400; }
+.pres-next { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 6px; border: 1px solid var(--border); background: var(--slide-bg); }
+.pres-next .thumb-inner { transform-origin: 0 0; }
+.pres-next-label { font-size: 13px; color: var(--muted); margin-bottom: -8px; }
+.pres-next .empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.pres-notes { overflow: auto; background: var(--slide-bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px 18px; font-size: 20px; line-height: 1.5; }
+.pres-notes:empty::before { content: "Заметок к этому слайду нет"; color: var(--muted); font-style: italic; }
+.pres-notes p { margin: 0 0 .6em; }
+body.presenter .counter { right: calc(38% + 16px); }
+body.presenter .progress { width: 62%; }
+
+/* ---------- печать / PDF ---------- */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; width: 1280px; height: 720px; border-radius: 0; box-shadow: none;
+    page-break-after: always; break-after: page;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .fragment { opacity: 1 !important; transform: none !important; }
+  .progress, .counter, .overlay, .presenter-ui { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fragment, .progress > span { transition: none; }
+}
